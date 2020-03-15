@@ -1,4 +1,4 @@
-// PCL lib Functions for processing point clouds 
+// PCL lib Functions for processing point clouds
 
 #ifndef PROCESSPOINTCLOUDS_H_
 #define PROCESSPOINTCLOUDS_H_
@@ -12,17 +12,17 @@
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/common/transforms.h>
-#include <iostream> 
-#include <string>  
+#include <iostream>
+#include <string>
 #include <vector>
 #include <ctime>
 #include <chrono>
 #include "render/box.h"
 
-template<typename PointT>
-class ProcessPointClouds {
+template <typename PointT>
+class ProcessPointClouds
+{
 public:
-
     //constructor
     ProcessPointClouds();
     //deconstructor
@@ -30,7 +30,8 @@ public:
 
     void numPoints(typename pcl::PointCloud<PointT>::Ptr cloud);
 
-    typename pcl::PointCloud<PointT>::Ptr FilterCloud(typename pcl::PointCloud<PointT>::Ptr cloud, float filterRes, Eigen::Vector4f minPoint, Eigen::Vector4f maxPoint);
+    typename pcl::PointCloud<PointT>::Ptr FilterCloud(typename pcl::PointCloud<PointT>::Ptr cloud,
+                                                      float filterRes, Eigen::Vector4f minPoint, Eigen::Vector4f maxPoint);
 
     std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> SeparateClouds(pcl::PointIndices::Ptr inliers, typename pcl::PointCloud<PointT>::Ptr cloud);
 
@@ -45,6 +46,5 @@ public:
     typename pcl::PointCloud<PointT>::Ptr loadPcd(std::string file);
 
     std::vector<boost::filesystem::path> streamPcd(std::string dataPath);
-  
 };
 #endif /* PROCESSPOINTCLOUDS_H_ */
