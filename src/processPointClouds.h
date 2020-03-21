@@ -19,31 +19,51 @@
 #include <chrono>
 #include "render/box.h"
 
+template <typename PointType>
+using CloudPtr = typename pcl::PointCloud<PointType>::Ptr;
+
+template <typename PointType>
+using CloudPtrVec = std::vector<CloudPtr<PointType>>;
+
+template <typename PointType>
+using CloudPtrPair = std::pair<CloudPtr<PointType>, CloudPtr<PointType>>;
+
 template <typename PointT>
 class ProcessPointClouds
 {
 public:
-    //constructor
     ProcessPointClouds();
-    //deconstructor
     ~ProcessPointClouds();
 
-    void numPoints(typename pcl::PointCloud<PointT>::Ptr cloud);
+    void numPoints(CloudPtr<PointT> cloud);
 
-    typename pcl::PointCloud<PointT>::Ptr FilterCloud(typename pcl::PointCloud<PointT>::Ptr cloud,
-                                                      float filterRes, Eigen::Vector4f minPoint, Eigen::Vector4f maxPoint);
 
-    std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> SeparateClouds(pcl::PointIndices::Ptr inliers, typename pcl::PointCloud<PointT>::Ptr cloud);
+    CloudPtr<PointT> FilterCloud(CloudPtr<PointT> cloud, float filterRes, Eigen::Vector4f minPoint, Eigen::Vector4f maxPoint);
 
-    std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> SegmentPlane(typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations, float distanceThreshold);
+    /**
+     * Takes inliers for some model (in this case, plane model), and seperates
+     * inliers in "cloud" from the rest, returning the seperated clouds
+     * 
+     * Returns: CloudPtrPair (object cloud, plane cloud)
+    **/
+    CloudPtrPair<PointT> SeparateClouds(pcl::PointIndices::Ptr inliers, CloudPtr<PointT> cloud);
 
-    std::vector<typename pcl::PointCloud<PointT>::Ptr> Clustering(typename pcl::PointCloud<PointT>::Ptr cloud, float clusterTolerance, int minSize, int maxSize);
+    /**
+     * Performs RANSAC in order to seperate the groud plane from the rest of the cloud.
+     */
+    CloudPtrPair<PointT> SegmentPlane(CloudPtr<PointT> cloud, int maxIterations, float distanceThreshold);
 
-    Box BoundingBox(typename pcl::PointCloud<PointT>::Ptr cluster);
+    /** 
+     * Performs K-d clustering on cloud (typically non-plane points) to identify obstacles.
+     * Returns vector of CloudPtr, each an estimate obstacle
+     */
+    CloudPtrVec<PointT> Clustering(CloudPtr<PointT> cloud, float clusterTolerance, int minSize, int maxSize);
 
-    void savePcd(typename pcl::PointCloud<PointT>::Ptr cloud, std::string file);
+    Box BoundingBox(CloudPtr<PointT> cluster);
 
-    typename pcl::PointCloud<PointT>::Ptr loadPcd(std::string file);
+    void savePcd(CloudPtr<PointT> cloud, std::string file);
+
+    CloudPtr<PointT> loadPcd(std::string file);
 
     std::vector<boost::filesystem::path> streamPcd(std::string dataPath);
 };

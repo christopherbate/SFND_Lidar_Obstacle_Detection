@@ -8,6 +8,9 @@
 #include "processPointClouds.h"
 #include "processPointClouds.cpp"
 
+/**
+ * Sets up the scene within the PCL vizualizer
+ */
 std::vector<Car> initHighway(bool renderScene, pcl::visualization::PCLVisualizer::Ptr &viewer)
 {
 
@@ -34,35 +37,32 @@ std::vector<Car> initHighway(bool renderScene, pcl::visualization::PCLVisualizer
     return cars;
 }
 
+/**
+ * Open 3D viewer and display simple highway
+ */ 
 void simpleHighway(pcl::visualization::PCLVisualizer::Ptr &viewer)
 {
-    // ----------------------------------------------------
-    // -----Open 3D viewer and display simple highway -----
-    // ----------------------------------------------------
-
-    // RENDER OPTIONS
     bool renderScene = false;
     std::vector<Car> cars = initHighway(renderScene, viewer);
 
     // Perform lidar scan
     auto lidarPtr = std::make_shared<Lidar>(cars, 0.0);
-    auto scan = lidarPtr->scan();
-    std::cout << "Scan is of size " << scan->size() << std::endl;
+    auto scan = lidarPtr->scan();    
 
-    // Create processor and segment
+    // Segment ground plane then cluster
     auto pclProcessor = std::make_shared<ProcessPointClouds<pcl::PointXYZ>>();
     auto clouds = pclProcessor->SegmentPlane(lidarPtr->cloud, 100, 0.2);
     auto clusters = pclProcessor->Clustering(clouds.first, 2.0, 2, 1000);
 
-    // Render clusters
+    // Render clusters in different colors
     int clusterId = 0;
-    std::vector<Color> colors = {Color(1, 0, 0), Color(0, 1, 0), Color(0, 0, 1)};
-
+    std::vector<Color> colors = {Color(1, 0, 0), Color(0, 1, 0), Color(0, 0, 1)};    
     for (auto cluster : clusters)
-    {
-        std::cout << "cluster size ";
+    {        
         pclProcessor->numPoints(cluster);
         renderPointCloud(viewer, cluster, "obstCloud" + std::to_string(clusterId), colors[clusterId % 3]);
+        auto box = pclProcessor->BoundingBox(cluster);
+        renderBox(viewer, box, clusterId);
         ++clusterId;
     }
 
@@ -70,15 +70,13 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr &viewer)
     // renderPointCloud(viewer, clouds.second, "ground plane", Color(0, 1, 0));
 }
 
-//setAngle: SWITCH CAMERA ANGLE {XY, TopDown, Side, FPS}
+/**
+ * setAngle: SWITCH CAMERA ANGLE {XY, TopDown, Side, FPS}
+ */
 void initCamera(CameraAngle setAngle, pcl::visualization::PCLVisualizer::Ptr &viewer)
 {
-
-    viewer->setBackgroundColor(0, 0, 0);
-
-    // set camera position and angle
-    viewer->initCameraParameters();
-    // distance away in meters
+    viewer->setBackgroundColor(0, 0, 0);    
+    viewer->initCameraParameters();    
     int distance = 16;
 
     switch (setAngle)
