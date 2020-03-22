@@ -17,16 +17,9 @@
 #include <vector>
 #include <ctime>
 #include <chrono>
+
 #include "render/box.h"
-
-template <typename PointType>
-using CloudPtr = typename pcl::PointCloud<PointType>::Ptr;
-
-template <typename PointType>
-using CloudPtrVec = std::vector<CloudPtr<PointType>>;
-
-template <typename PointType>
-using CloudPtrPair = std::pair<CloudPtr<PointType>, CloudPtr<PointType>>;
+#include "types.h"
 
 template <typename PointT>
 class ProcessPointClouds
@@ -36,7 +29,6 @@ public:
     ~ProcessPointClouds();
 
     void numPoints(CloudPtr<PointT> cloud);
-
 
     CloudPtr<PointT> FilterCloud(CloudPtr<PointT> cloud, float filterRes, Eigen::Vector4f minPoint, Eigen::Vector4f maxPoint);
 
@@ -51,7 +43,7 @@ public:
     /**
      * Performs RANSAC in order to seperate the groud plane from the rest of the cloud.
      */
-    CloudPtrPair<PointT> SegmentPlane(CloudPtr<PointT> cloud, int maxIterations, float distanceThreshold);
+    CloudPtrPair<PointT> SegmentPlane(CloudPtr<PointT> const& cloud, int maxIterations, float distanceThreshold);
 
     /** 
      * Performs K-d clustering on cloud (typically non-plane points) to identify obstacles.
